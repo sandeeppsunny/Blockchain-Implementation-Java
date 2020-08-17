@@ -6,10 +6,19 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Block implements Serializable {
+    Integer nonce;
     String prevHash;
     String creator;
     String data;
     Long timestamp;
+
+    public Integer getNonce() {
+        return nonce;
+    }
+
+    public void setNonce(Integer nonce) {
+        this.nonce = nonce;
+    }
 
     public String getCreator() {
         return creator;
@@ -58,7 +67,8 @@ public class Block implements Serializable {
         this.creator = creator;
         this.data = data;
         this.timestamp = timestamp;
-        this.selfHash = calculateHash(prevHash, creator, data, timestamp);
+        this.nonce = mineBlock(prevHash, creator, data, timestamp);
+        this.selfHash = calculateHash(nonce, prevHash, creator, data, timestamp);
     }
 
     @Override
@@ -67,13 +77,24 @@ public class Block implements Serializable {
                 + data + ", Timestamp -> " + timestamp;
     }
 
+    public int mineBlock(String prevHash, String creator, String data, Long timestamp) {
+        int localNonce = 0;
+        while(!calculateHash(localNonce, prevHash, creator, data, timestamp).substring(0, 2).equals("00")) {
+            localNonce++;
+            if(localNonce == Integer.MAX_VALUE) {
+                break;
+            }
+        };
+        return localNonce;
+    }
+
     public static Block createGenesisBlock(String creator) {
         return new Block("Genesis hash", creator, "Genesis block", System.currentTimeMillis());
     }
 
-    public String calculateHash(String prevHash, String creator, String data, Long timestamp) {
+    public String calculateHash(Integer nonce, String prevHash, String creator, String data, Long timestamp) {
         MessageDigest md;
-        String input = prevHash + creator + data + Long.toString(timestamp);
+        String input = nonce + prevHash + creator + data + Long.toString(timestamp);
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch(NoSuchAlgorithmException e) {
