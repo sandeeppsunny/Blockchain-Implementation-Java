@@ -1,4 +1,4 @@
 FROM gradle
-ADD . /Node
+COPY . /Node
 WORKDIR /Node
 ENTRYPOINT ["gradle", "bootRun"]

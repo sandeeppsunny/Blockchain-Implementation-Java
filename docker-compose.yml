@@ -1,0 +1,14 @@
+version: '3'
+services:
+  node-1:
+    build: .
+    ports:
+      - "4569:8080"
+  node-2:
+    build: .
+    ports: 
+      - "4570:8080"
+  node-3:
+    build: .
+    ports:
+      - "4571:8080"

@@ -1,20 +1,29 @@
 package node;
 
+import org.springframework.web.client.RestTemplate;
+
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
+import java.net.InetAddress;
+import java.util.*;
 
 public class Node implements Serializable {
     String creator;
     Block tail;
     List<Block> blockChain = new LinkedList<Block>();
     static Node instance;
+    Set<NodeDetail> peerNodes = new HashSet<NodeDetail>();
+    NodeDetail selfDetail;
 
     private Node(String creator) {
         Block genesis = Block.createGenesisBlock(creator);
         this.creator = creator;
         this.blockChain.add(genesis);
-        this.tail = genesis;;
+        this.tail = genesis;
+        try {
+            this.selfDetail = new NodeDetail(InetAddress.getLocalHost().getHostAddress(), "8080");
+        } catch (Exception e) {
+            System.out.println("Did not receive IP address");
+        }
     }
 
     public Block getLastBlock() {
@@ -69,4 +78,39 @@ public class Node implements Serializable {
         }
         return instance;
     }
+
+    public void bootstrap() {
+        for(NodeDetail node: getPeerNodes()) {
+            String uri = "http://" + node.getIpAddress() + ":" + node.getPortNo() + "/node/peer/register";
+            RestTemplate restTemplate = new RestTemplate();
+            NodeDetail nodeDetail = new NodeDetail(selfDetail.getIpAddress(), selfDetail.getPortNo());
+            NodeDetail[] peers = restTemplate.postForObject(uri, nodeDetail, NodeDetail[].class);
+            for(NodeDetail peer: peers) {
+                if(peer.equals(selfDetail)) {
+                    continue;
+                }
+                registerPeerNode(peer);
+            }
+        }
+    }
+
+    public void bootstrapPeerNode(NodeDetail peer) {
+        String uri = "http://" + peer.getIpAddress() + ":" + peer.getPortNo() + "/node/bootstrap";
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.postForObject(uri, peer, NodeDetail[].class);
+    }
+
+    public void syncBlockchain() {
+
+    }
+
+    public synchronized void registerPeerNode(NodeDetail node) {
+        this.peerNodes.add(node);
+    }
+
+    public Set<NodeDetail> getPeerNodes() {
+        return this.peerNodes;
+    }
+
+
 }
