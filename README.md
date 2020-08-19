@@ -1,4 +1,4 @@
-This is a simple implementation of a blockchain in Java.
+This is a simple implementation of blockchain in Java.
 
 ## Getting started
 
