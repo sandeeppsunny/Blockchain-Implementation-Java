@@ -30,12 +30,17 @@ public class NodeController {
         Node.getInstance("").bootstrap();
     }
 
-    @RequestMapping(method = GET, path = "/blockchain")
+    @RequestMapping(method = GET, path = "/blockchain/get")
     public List<Block> getBlockchain() {
         return Node.getInstance("").getBlockChain();
     }
 
-    @RequestMapping(method = POST, path = "/blockchain/add")
+    @RequestMapping(method = POST, path = "/blockchain/sync")
+    public void syncBlockchain(@RequestBody() Block[] blockChain) {
+        Node.getInstance("").syncBlockChain(blockChain);
+    }
+
+    @RequestMapping(method = POST, path = "/blockchain/addblock")
     public List<Block> addBlock(@RequestParam("data") String data) {
         Node.getInstance("").addBlock(data);
         return Node.getInstance("").getBlockChain();
@@ -50,7 +55,7 @@ public class NodeController {
         return result;
     }
 
-    @RequestMapping(method = GET, path = "/peer")
+    @RequestMapping(method = GET, path = "/peer/get")
     public NodeDetail[] getPeerNodes() {
         Set<NodeDetail> peerNodes = Node.getInstance("").getPeerNodes();
         NodeDetail[] result = new NodeDetail[peerNodes.size()];

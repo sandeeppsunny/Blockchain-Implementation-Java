@@ -42,6 +42,7 @@ public class Node implements Serializable {
         Block block = new Block(tail.selfHash, creator, data, System.currentTimeMillis());
         tail = block;
         blockChain.add(block);
+        broadcastBlockChain();
         return tail;
     }
 
@@ -90,18 +91,27 @@ public class Node implements Serializable {
                     continue;
                 }
                 registerPeerNode(peer);
+                restTemplate.postForObject(uri, nodeDetail, NodeDetail[].class);
             }
         }
     }
 
-    public void bootstrapPeerNode(NodeDetail peer) {
-        String uri = "http://" + peer.getIpAddress() + ":" + peer.getPortNo() + "/node/bootstrap";
-        RestTemplate restTemplate = new RestTemplate();
-        restTemplate.postForObject(uri, peer, NodeDetail[].class);
+    public void broadcastBlockChain() {
+        for(NodeDetail node: getPeerNodes()) {
+            if(node.equals(selfDetail)) {
+                continue;
+            }
+            String uri = "http://" + node.getIpAddress() + ":" + node.getPortNo() + "/node/blockchain/sync";
+            RestTemplate restTemplate = new RestTemplate();
+            Block[] blockChainArray = new Block[getBlockChainSize()];
+            blockChain.toArray(blockChainArray);
+            restTemplate.postForObject(uri, blockChainArray, Object.class);
+        }
     }
 
-    public void syncBlockchain() {
-
+    public void syncBlockChain(Block[] blockChainArray) {
+        List<Block> receivedBlockChain = new LinkedList<Block>(Arrays.asList(blockChainArray));
+        replaceBlockChain(receivedBlockChain);
     }
 
     public synchronized void registerPeerNode(NodeDetail node) {
