@@ -4,7 +4,7 @@ This is a simple implementation of blockchain in Java.
 
 Clone this repository
 ```
-git clone https://github.com/sandeeppsunny/Blockchain-implementation-java.gitt
+git clone https://github.com/sandeeppsunny/Blockchain-implementation-java.git
 ```
 
 Bring up the blockchain nodes
